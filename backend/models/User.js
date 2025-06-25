@@ -3,8 +3,7 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
-        required: true,
-        unique: true,   // Ensures no two users have the same username
+        required: true,   // Ensures no two users have the same username
     },
     email: {
         type: String,
@@ -15,7 +14,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     }
-}, { timestamps: true });  // Automatically adds createdAt and updatedAt fields
+});  // Automatically adds createdAt and updatedAt fields
 
 const User = mongoose.model("User", userSchema);
 
