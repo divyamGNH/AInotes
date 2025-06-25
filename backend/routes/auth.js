@@ -1,7 +1,12 @@
 import express from "express";
+import dotenv from "dotenv";
+
 import User from "../models/User.js";
 
 const router = express.Router();
+dotenv.config();
+
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 router.post("/register", async (req, res) => {
   const { username, email, password } = req.body;
@@ -10,19 +15,24 @@ router.post("/register", async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already registered. Please login instead." });
+      return res
+        .status(400)
+        .json({ message: "User already registered. Please login instead." });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // Create new user
-    const newUser = new User({ username, email, password });
+    const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
     res.status(201).json({ message: "User registered successfully." });
   } catch (error) {
-    res.status(500).json({ message: "Error registering user.", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error registering user.", error: error.message });
   }
 });
-
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
@@ -31,19 +41,39 @@ router.post("/login", async (req, res) => {
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: "User not found. Please register first." });
+      return res
+        .status(404)
+        .json({ message: "User not found. Please register first." });
     }
 
-    // Check password (plain text match)
-    if (user.password !== password) {
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (isPasswordValid) {
       return res.status(401).json({ message: "Incorrect password." });
     }
 
-    res.status(200).json({ message: "Login successful.", user: { username: user.username, email: user.email } });
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // true in production (HTTPS)
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7days expiry
+    });
+
+    res
+      .status(200)
+      .json({
+        message: "Login successful.",
+        user: { username: user.username, email: user.email },
+      });
   } catch (error) {
-    res.status(500).json({ message: "Error logging in.", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error logging in.", error: error.message });
   }
 });
-
 
 export default router;

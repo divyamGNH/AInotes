@@ -1,27 +1,24 @@
-# Node modules
-node_modules/
-
 # Logs
-logs/
+logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Environment variables
-.env
+node_modules
+dist
+dist-ssr
+*.local
 
-# OS-specific files
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-Thumbs.db
-
-# Optional: build output
-dist/
-build/
-
-# Optional: IDE specific files
-.vscode/
-.idea/
-
-# Optional: coverage reports
-coverage/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
